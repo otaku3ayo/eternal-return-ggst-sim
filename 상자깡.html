@@ -47,7 +47,8 @@ button:disabled {
 
 <h1>GGST 상자 시뮬레이터</h1>
 
-<button id="openBtn" onclick="openBox()">📦 상자 열기</button>
+<button id="open1Btn" onclick="open1()">📦 1챠</button>
+<button id="open10Btn" onclick="open10()">📦 10연챠</button>
 <button id="resetBtn" onclick="resetSim()" disabled>🔄 재도전</button>
 
 <div class="box">
@@ -88,8 +89,8 @@ function rollToken() {
   return 1;
 }
 
-function openBox() {
-  if (finished) return;
+function openBoxInternal() {
+  if (finished) return false;
 
   boxes++;
   cards++;
@@ -114,16 +115,34 @@ function openBox() {
   updateUI();
 
   if (tokens >= 555) {
-    finished = true;
-    document.getElementById("openBtn").disabled = true;
-    document.getElementById("resetBtn").disabled = false;
-
-    prependLog(
-      `<span class="success">🎉 목표 달성!</span><br>
-       총 상자: ${boxes}<br>
-       총 사용 금액: ${money}원`
-    );
+    finishSim();
+    return false;
   }
+
+  return true;
+}
+
+function open1() {
+  openBoxInternal();
+}
+
+function open10() {
+  for (let i = 0; i < 10; i++) {
+    if (!openBoxInternal()) break;
+  }
+}
+
+function finishSim() {
+  finished = true;
+  document.getElementById("open1Btn").disabled = true;
+  document.getElementById("open10Btn").disabled = true;
+  document.getElementById("resetBtn").disabled = false;
+
+  prependLog(
+    `<span class="success">🎉 목표 달성!</span><br>
+     총 상자: ${boxes}<br>
+     총 사용 금액: ${money}원`
+  );
 }
 
 function prependLog(text) {
@@ -146,7 +165,8 @@ function resetSim() {
   bonusGiven = false;
   finished = false;
 
-  document.getElementById("openBtn").disabled = false;
+  document.getElementById("open1Btn").disabled = false;
+  document.getElementById("open10Btn").disabled = false;
   document.getElementById("resetBtn").disabled = true;
   document.getElementById("log").innerHTML = "대기 중...";
 
