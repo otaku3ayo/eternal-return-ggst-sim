@@ -76,6 +76,7 @@ let boxes = 0;
 let cards = 0;
 let tokens = 0;
 let money = 0;
+let paidBoxes = 0;   // ✅ 결제된 상자 수
 let bonusGiven = false;
 let finished = false;
 
@@ -95,20 +96,23 @@ function openBoxInternal() {
   boxes++;
   cards++;
 
+  let logText = `📦 ${boxes}번째 상자`;
+
+  // ✅ 결제 로직 (1, 11, 21번째 상자에서 결제)
+  if (boxes > paidBoxes) {
+    money += 10900;
+    paidBoxes += 10;
+    logText += ` 💸 10상자 결제`;
+  }
+
   const got = rollToken();
   tokens += got;
-
-  let logText = `📦 ${boxes}번째 상자 → 토큰 ${got}개`;
+  logText += ` → 토큰 ${got}개`;
 
   if (cards === 50 && !bonusGiven) {
     tokens += 100;
     bonusGiven = true;
     logText += ` 🔥 카드 50장 보너스 +100`;
-  }
-
-  if (boxes % 10 === 0) {
-    money += 10900;
-    logText += ` 💸 10상자 결제`;
   }
 
   prependLog(logText);
@@ -162,6 +166,7 @@ function resetSim() {
   cards = 0;
   tokens = 0;
   money = 0;
+  paidBoxes = 0;
   bonusGiven = false;
   finished = false;
 
