@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>GGST 상자 시뮬레이터</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #111;
+  color: #eee;
+  text-align: center;
+}
+button {
+  font-size: 18px;
+  padding: 10px 25px;
+  margin: 10px;
+  cursor: pointer;
+}
+button:disabled {
+  background: #333;
+  color: #777;
+  cursor: not-allowed;
+}
+.box {
+  margin-top: 20px;
+  border-top: 1px solid #444;
+  padding-top: 15px;
+}
+.log {
+  margin: 20px auto;
+  width: 80%;
+  height: 180px;
+  overflow-y: auto;
+  border: 1px solid #333;
+  padding: 10px;
+  text-align: left;
+  font-size: 14px;
+}
+.success {
+  color: #4cff4c;
+  font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<h1>GGST 상자 시뮬레이터</h1>
+
+<button id="openBtn" onclick="openBox()">📦 상자 열기</button>
+<button id="resetBtn" onclick="resetSim()" disabled>🔄 재도전</button>
+
+<div class="box">
+  <p>상자 수: <b><span id="boxes">0</span></b></p>
+  <p>카드 수: <b><span id="cards">0</span></b></p>
+  <p>토큰: <b><span id="tokens">0</span></b> / 555</p>
+  <p>사용 금액: <b><span id="money">0</span></b> 원</p>
+</div>
+
+<div class="log" id="log">대기 중...</div>
+
+<script>
+const table = [
+  [100, 0.01],
+  [50,  0.03],
+  [30,  0.05],
+  [20,  0.05],
+  [10,  0.10],
+  [5,   0.20],
+  [3,   0.35],
+  [1,   0.21],
+];
+
+let boxes = 0;
+let cards = 0;
+let tokens = 0;
+let money = 0;
+let bonusGiven = false;
+let finished = false;
+
+function rollToken() {
+  let r = Math.random();
+  let acc = 0;
+  for (let i = 0; i < table.length; i++) {
+    acc += table[i][1];
+    if (r <= acc) return table[i][0];
+  }
+  return 1;
+}
+
+function openBox() {
+  if (finished) return;
+
+  boxes++;
+  cards++;
+
+  const got = rollToken();
+  tokens += got;
+
+  let logText = `📦 ${boxes}번째 상자 → 토큰 ${got}개`;
+
+  if (cards === 50 && !bonusGiven) {
+    tokens += 100;
+    bonusGiven = true;
+    logText += ` 🔥 카드 50장 보너스 +100`;
+  }
+
+  if (boxes % 10 === 0) {
+    money += 10900;
+    logText += ` 💸 10상자 결제`;
+  }
+
+  prependLog(logText);
+  updateUI();
+
+  if (tokens >= 555) {
+    finished = true;
+    document.getElementById("openBtn").disabled = true;
+    document.getElementById("resetBtn").disabled = false;
+
+    prependLog(
+      `<span class="success">🎉 목표 달성!</span><br>
+       총 상자: ${boxes}<br>
+       총 사용 금액: ${money}원`
+    );
+  }
+}
+
+function prependLog(text) {
+  const log = document.getElementById("log");
+  log.innerHTML = text + "<br>" + log.innerHTML;
+}
+
+function updateUI() {
+  document.getElementById("boxes").textContent = boxes;
+  document.getElementById("cards").textContent = cards;
+  document.getElementById("tokens").textContent = tokens;
+  document.getElementById("money").textContent = money;
+}
+
+function resetSim() {
+  boxes = 0;
+  cards = 0;
+  tokens = 0;
+  money = 0;
+  bonusGiven = false;
+  finished = false;
+
+  document.getElementById("openBtn").disabled = false;
+  document.getElementById("resetBtn").disabled = true;
+  document.getElementById("log").innerHTML = "대기 중...";
+
+  updateUI();
+}
+</script>
+
+</body>
+</html>
